@@ -1,0 +1,68 @@
+---
+title: "RBioFormats demo"
+format: html
+editor: visual
+---
+
+## Library installation
+
+This script currently runs on the development versions of `CytoImageList` and `cytomapper`. They can be installed via:
+
+```{r}
+remotes::install_github("BodenmillerGroup/CytoImageList")
+remotes::install_github("BodenmillerGroup/cytomapper", ref = "no_CIL")
+```
+
+## Download data
+
+Here, I download a number of OME-TIFF files hosted on Zenodo.
+
+```{r}
+library(tools)
+download.file("https://zenodo.org/record/7412972/files/ome.zip?download=1",
+              destfile = "ome.zip", method = "wget")
+
+unzip("ome.zip")
+
+unlink("ome.zip")
+```
+
+## Loading the library and helper functions
+
+```{r}
+library(RBioFormats)
+library(xml2)
+library(CytoImageList)
+source("helpers.R")
+library(S4Vectors)
+```
+
+## Reading in data
+
+The `read_ometiff` function is a custom function that reads in OME-TIFF files together with metadata into a `CytoImageList` object. It stores image information in an `AnnotatedImage` object.
+
+```{r}
+images <- read_ometiff("ome")
+
+images
+
+channelData(images)
+
+images$Patient1_001.ome.tiff
+
+mcols(images)
+```
+
+## Visualize images
+
+As the `AnnotatedImage` class inherits from `Image`, the `CytoImageList` object can be directly visualized using `cytomapper`.
+
+```{r, fig.width=12, fig.height=12}
+library(cytomapper)
+
+plotPixels(images, 
+           colour_by = c("Yb173_Ecad", "Ho165_CD8a", "Ir191_DNA1"),
+           bcg = list("Yb173_Ecad" = c(0, 10, 1),
+                      "Ho165_CD8a" = c(0, 5, 1),
+                      "Ir191_DNA1" = c(0, 5, 1)))
+```

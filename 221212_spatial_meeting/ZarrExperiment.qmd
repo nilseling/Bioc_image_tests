@@ -1,0 +1,62 @@
+---
+title: "ZarrExperiment demo"
+format: html
+editor: visual
+---
+
+## Library installation
+
+This script currently runs on the development versions of `CytoImageList` and `cytomapper`. They can be installed via:
+
+```{r}
+remotes::install_github("BodenmillerGroup/CytoImageList")
+remotes::install_github("BodenmillerGroup/cytomapper", ref = "no_CIL")
+```
+
+## Download data
+
+I host an example ZARR file on Dropbox as the cloud access for this file didn't work in the past.
+
+```{r}
+library(tools)
+download.file("https://www.dropbox.com/s/klr08bgv22natwf/5514375.zarr.zip?dl=0",
+              destfile = "zarr/5514375.zarr.zip", method = "wget")
+
+unzip("zarr/5514375.zarr.zip", exdir = "zarr")
+
+unlink("zarr/5514375.zarr.zip")
+unlink("zarr/__MACOSX/")
+```
+
+## Load libraries
+
+```{r libraries}
+library(ZarrExperiment)
+library(EBImage)
+library(CytoImageList)
+source("helpers.R")
+```
+
+## Read data
+
+The `read_omengff` function is a custom function that reads in OME-NGFF files together with metadata into a `CytoImageList` object. It stores image information in an `Image` object in memory. The `res` parameters specifies the resolution of the read in images.
+
+```{r}
+images <- read_omengff("zarr", res = "0")
+```
+
+## Visualize image
+
+The example image are 5D of the shape (x, y, c, z, t). The `cytomapper` package currently does not support 4D and 5D data and we need to subset intividual frames.
+
+```{r}
+library(cytomapper)
+
+images_small <- endoapply(images, function(x){x[,,,10,1]})
+
+plotPixels(images_small, 
+           colour_by = c("NCAPD2", "NEG_Dextran", "DNA"),
+           bcg = list("NCAPD2" = c(0, 5, 1),
+                      "NEG_Dextran" = c(0, 5, 1),
+                      "DNA" = c(0, 5, 1)))
+```

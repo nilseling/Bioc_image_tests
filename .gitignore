@@ -1,0 +1,5 @@
+*.DS_Store
+.Rproj.user
+221212_spatial_meeting/zarr/*.zarr
+221212_spatial_meeting/ome/*.ome.tiff
+221212_spatial_meeting/zarr/__MACOSX
